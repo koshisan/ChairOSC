@@ -1,6 +1,9 @@
 using System.Drawing;
 using System.Windows;
 using WinForms = System.Windows.Forms;
+using Application = System.Windows.Application;
+using StartupEventArgs = System.Windows.StartupEventArgs;
+using MessageBox = System.Windows.MessageBox;
 
 namespace ChairOSC;
 
