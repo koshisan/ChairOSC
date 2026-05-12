@@ -1,0 +1,17 @@
+# Visual Studio
+bin/
+obj/
+.vs/
+*.user
+*.suo
+
+# JetBrains
+.idea/
+*.iml
+
+# Build outputs
+publish/
+
+# OS
+.DS_Store
+Thumbs.db
