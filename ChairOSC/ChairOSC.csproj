@@ -9,10 +9,15 @@
     <RootNamespace>ChairOSC</RootNamespace>
     <AssemblyName>ChairOSC</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>1.0.0</Version>
+    <ApplicationIcon>chair.ico</ApplicationIcon>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Rug.Osc" Version="1.2.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="chair.ico" />
   </ItemGroup>
 </Project>

@@ -37,6 +37,7 @@ public partial class MainWindow : Window
         OscPortBox.Text = c.OscPort.ToString(Inv);
         HeatEntityBox.Text = c.HeatEntity;
         EnabledBox.IsChecked = c.Enabled;
+        StartToTrayBox.IsChecked = c.StartToTray;
 
         BaseIntensityBox.Text = c.BaseIntensity.ToString("0.00", Inv);
         VelocityScaleBox.Text = c.VelocityScale.ToString("0.00", Inv);
@@ -81,6 +82,7 @@ public partial class MainWindow : Window
         if (int.TryParse(OscPortBox.Text, NumberStyles.Integer, Inv, out var port)) c.OscPort = port;
         c.HeatEntity = HeatEntityBox.Text.Trim();
         c.Enabled = EnabledBox.IsChecked ?? true;
+        c.StartToTray = StartToTrayBox.IsChecked ?? false;
 
         if (double.TryParse(BaseIntensityBox.Text, NumberStyles.Float, Inv, out var b)) c.BaseIntensity = b;
         if (double.TryParse(VelocityScaleBox.Text, NumberStyles.Float, Inv, out var v)) c.VelocityScale = v;

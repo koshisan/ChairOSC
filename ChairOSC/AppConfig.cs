@@ -10,6 +10,7 @@ public class AppConfig
     public int OscPort { get; set; } = 9001;
     public string OscBind { get; set; } = "127.0.0.1";
     public bool Enabled { get; set; } = true;
+    public bool StartToTray { get; set; } = false;  // skip opening MainWindow at launch
 
     // Velocity calculation
     public double BaseIntensity { get; set; } = 0.20;     // floor when zone is touched (proximity>threshold) but not moving

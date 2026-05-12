@@ -25,9 +25,22 @@ public partial class App : Application
 
         Osc.Start(Cfg.OscBind, Cfg.OscPort);
 
+        // Load chair.ico from the WPF resources (embedded via Resource item).
+        Icon trayIcon = SystemIcons.Application;
+        try
+        {
+            var iconStreamInfo = GetResourceStream(new Uri("chair.ico", UriKind.Relative));
+            if (iconStreamInfo != null)
+            {
+                using var stream = iconStreamInfo.Stream;
+                trayIcon = new Icon(stream);
+            }
+        }
+        catch { /* fall back to system icon */ }
+
         _tray = new WinForms.NotifyIcon
         {
-            Icon = SystemIcons.Application,
+            Icon = trayIcon,
             Text = "ChairOSC",
             Visible = true,
         };
@@ -48,9 +61,9 @@ public partial class App : Application
         _tray.ContextMenuStrip = menu;
         _tray.DoubleClick += (s, a) => ShowWindow();
 
-        // Open the settings window on first launch so the tray icon's
-        // presence (and configuration entry point) is discoverable.
-        ShowWindow();
+        // Open the settings window on launch unless the user has opted into
+        // start-to-tray. The tray icon is always present either way.
+        if (!Cfg.StartToTray) ShowWindow();
     }
 
     private void ShowWindow()
