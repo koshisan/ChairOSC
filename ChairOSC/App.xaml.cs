@@ -47,6 +47,10 @@ public partial class App : Application
         exitItem.Click += (s, a) => Shutdown();
         _tray.ContextMenuStrip = menu;
         _tray.DoubleClick += (s, a) => ShowWindow();
+
+        // Open the settings window on first launch so the tray icon's
+        // presence (and configuration entry point) is discoverable.
+        ShowWindow();
     }
 
     private void ShowWindow()
