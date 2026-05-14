@@ -16,6 +16,7 @@ public class ZoneController
     private bool _lastHeat;
     public event Action<string>? Log;
     public event Action<int, double>? IntensityChanged;  // (hwZone 1..4, intensity 0..1)
+    public event Action<bool>? HeatChanged;
 
     private static readonly string[] OscZones = { "back", "lumbar", "lthigh", "rthigh", "lleg", "rleg" };
 
@@ -83,6 +84,7 @@ public class ZoneController
         if (!Cfg.Enabled) return;
         if (on == _lastHeat) return;
         _lastHeat = on;
+        HeatChanged?.Invoke(on);
         var ok = await _esp.SetSwitchAsync(Cfg.HeatEntity, on).ConfigureAwait(false);
         Log?.Invoke($"Heat → {(on ? "on" : "off")} {(ok ? "" : "(failed)")}");
     }

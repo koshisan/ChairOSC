@@ -4,10 +4,27 @@
         Title="ChairOSC" Height="560" Width="640" WindowStartupLocation="CenterScreen"
         Icon="/chair_light.ico">
   <DockPanel>
-    <StatusBar DockPanel.Dock="Bottom">
-      <StatusBarItem><TextBlock x:Name="StatusText" Text="Idle"/></StatusBarItem>
+    <StatusBar DockPanel.Dock="Bottom" Height="36">
+      <StatusBarItem>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+          <TextBlock Text="Z1" FontWeight="Bold" Margin="4,0,4,0" VerticalAlignment="Center"/>
+          <ProgressBar x:Name="Zone1Bar" Width="48" Height="10" Minimum="0" Maximum="1" Value="0"/>
+          <TextBlock x:Name="Zone1Text" Text="0,00" Width="32" Margin="4,0,8,0" VerticalAlignment="Center" FontFamily="Consolas" FontSize="11"/>
+          <TextBlock Text="Z2" FontWeight="Bold" Margin="0,0,4,0" VerticalAlignment="Center"/>
+          <ProgressBar x:Name="Zone2Bar" Width="48" Height="10" Minimum="0" Maximum="1" Value="0"/>
+          <TextBlock x:Name="Zone2Text" Text="0,00" Width="32" Margin="4,0,8,0" VerticalAlignment="Center" FontFamily="Consolas" FontSize="11"/>
+          <TextBlock Text="Z3" FontWeight="Bold" Margin="0,0,4,0" VerticalAlignment="Center"/>
+          <ProgressBar x:Name="Zone3Bar" Width="48" Height="10" Minimum="0" Maximum="1" Value="0"/>
+          <TextBlock x:Name="Zone3Text" Text="0,00" Width="32" Margin="4,0,8,0" VerticalAlignment="Center" FontFamily="Consolas" FontSize="11"/>
+          <TextBlock Text="Z4" FontWeight="Bold" Margin="0,0,4,0" VerticalAlignment="Center"/>
+          <ProgressBar x:Name="Zone4Bar" Width="48" Height="10" Minimum="0" Maximum="1" Value="0"/>
+          <TextBlock x:Name="Zone4Text" Text="0,00" Width="32" Margin="4,0,8,0" VerticalAlignment="Center" FontFamily="Consolas" FontSize="11"/>
+          <TextBlock Text="Heat" FontWeight="Bold" Margin="4,0,4,0" VerticalAlignment="Center"/>
+          <TextBlock x:Name="HeatStatusText" Text="off" Width="28" VerticalAlignment="Center" FontFamily="Consolas" FontSize="11"/>
+        </StackPanel>
+      </StatusBarItem>
       <Separator/>
-      <StatusBarItem><TextBlock x:Name="EspStatusText" Text="ESP: unknown"/></StatusBarItem>
+      <StatusBarItem><TextBlock x:Name="EspStatusText" Text="ESP: unknown" VerticalAlignment="Center"/></StatusBarItem>
     </StatusBar>
 
     <TabControl Margin="6">

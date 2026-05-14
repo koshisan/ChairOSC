@@ -18,8 +18,9 @@ public partial class MainWindow : Window
 
         App.Zc.Log += AddLog;
         App.Osc.Log += AddLog;
-        App.Zc.IntensityChanged += (hw, val) => Dispatcher.BeginInvoke(() =>
-            StatusText.Text = $"Zone {hw} → {val:0.00}");
+        App.Zc.IntensityChanged += (hw, val) => Dispatcher.BeginInvoke(() => SetZoneDisplay(hw, val));
+        App.Zc.HeatChanged += on => Dispatcher.BeginInvoke(() =>
+            HeatStatusText.Text = on ? "ON" : "off");
         App.Osc.RawOsc += (path, value) => Dispatcher.BeginInvoke(() =>
             AddLog($"OSC {path} = {value:0.000}"));
 
@@ -107,6 +108,18 @@ public partial class MainWindow : Window
     {
         var ok = await App.Esp.PingAsync();
         EspStatusText.Text = $"ESP {App.Cfg.EspHost}: {(ok ? "online" : "OFFLINE")}";
+    }
+
+    private void SetZoneDisplay(int hw, double val)
+    {
+        var v = Math.Clamp(val, 0.0, 1.0);
+        switch (hw)
+        {
+            case 1: Zone1Bar.Value = v; Zone1Text.Text = v.ToString("0.00", Inv); break;
+            case 2: Zone2Bar.Value = v; Zone2Text.Text = v.ToString("0.00", Inv); break;
+            case 3: Zone3Bar.Value = v; Zone3Text.Text = v.ToString("0.00", Inv); break;
+            case 4: Zone4Bar.Value = v; Zone4Text.Text = v.ToString("0.00", Inv); break;
+        }
     }
 
     private void AddLog(string line)
