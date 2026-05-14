@@ -81,7 +81,6 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
           </Grid.RowDefinitions>
 
@@ -103,11 +102,8 @@
           <Label Grid.Row="5" Grid.Column="0" Content="ESP min update interval (ms)"/>
           <TextBox Grid.Row="5" Grid.Column="1" x:Name="EspMinIntervalBox" Margin="0,3"/>
 
-          <Label Grid.Row="6" Grid.Column="0" Content="Max realistic velocity (/s)"/>
-          <TextBox Grid.Row="6" Grid.Column="1" x:Name="MaxRealisticVelocityBox" Margin="0,3"/>
-
-          <TextBlock Grid.Row="7" Grid.ColumnSpan="2" TextWrapping="Wrap" Margin="0,12" FontSize="11" Foreground="Gray">
-            intensity = max(BaseIntensity, VelocityScale × |dProximity/dt|) when proximity > TouchThreshold, else 0. Clamped to MaxIntensity. ESP writes throttled by min interval per hardware zone. Velocity pairs above Max realistic velocity are discarded as noise spikes (VRChat receiver flicker at sender edges).
+          <TextBlock Grid.Row="6" Grid.ColumnSpan="2" TextWrapping="Wrap" Margin="0,12" FontSize="11" Foreground="Gray">
+            intensity = max(BaseIntensity, VelocityScale × |dProximity/dt|) when proximity > TouchThreshold, else 0. Clamped to MaxIntensity. ESP writes throttled by min interval per hardware zone.
           </TextBlock>
         </Grid>
       </TabItem>

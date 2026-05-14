@@ -24,13 +24,13 @@ public class ZoneController
     {
         Cfg = cfg;
         _esp = esp;
-        foreach (var z in OscZones) _calc[z] = new VelocityCalculator(cfg.VelocityWindowMs, cfg.MaxRealisticVelocity);
+        foreach (var z in OscZones) _calc[z] = new VelocityCalculator(cfg.VelocityWindowMs);
         for (int i = 1; i <= 4; i++) { _lastSent[i] = -1; _lastSentMs[i] = 0; }
     }
 
     public void RebuildCalculators()
     {
-        foreach (var z in OscZones) _calc[z] = new VelocityCalculator(Cfg.VelocityWindowMs, Cfg.MaxRealisticVelocity);
+        foreach (var z in OscZones) _calc[z] = new VelocityCalculator(Cfg.VelocityWindowMs);
     }
 
     /// <summary>Called when an OSC ChairOSC/v1/{zone} float arrives.</summary>
