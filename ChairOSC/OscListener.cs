@@ -73,15 +73,21 @@ public class OscListener : IDisposable
 
         if (zone == "heat")
         {
-            bool on = arg switch
+            // Heat is binary on the recliner ESP, but the avatar parameter
+            // can be driven by a proximity contact (float 0..1) so the same
+            // path can also feed stepped heat hardware elsewhere. Treat any
+            // non-zero positive value as "on" — small epsilon guards against
+            // float-zero jitter from VRChat physics.
+            double raw = arg switch
             {
-                bool b => b,
-                int i => i != 0,
-                float f => f > 0.5f,
-                double d => d > 0.5,
-                _ => false,
+                bool b => b ? 1.0 : 0.0,
+                int i => i,
+                float f => f,
+                double d => d,
+                _ => 0.0,
             };
-            RawOsc?.Invoke(addr, on ? 1.0 : 0.0);
+            bool on = raw > 0.001;
+            RawOsc?.Invoke(addr, raw);
             await _zc.OnHeatAsync(on).ConfigureAwait(false);
             return;
         }
