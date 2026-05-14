@@ -29,14 +29,15 @@ public class AppConfig
     public double MultRLeg { get; set; } = 1.0;
 
     // Hardware mapping: which hardware-zone (1..4) each OSC zone drives.
-    // PLACEHOLDER — chair's physical zone-to-motor mapping not yet measured.
-    // Update once empirically determined.
+    // Verified empirically: zone 2 = legs, zone 4 = lumbar (the original
+    // PLACEHOLDER had these swapped). Back=1, Thigh=3 remain as initially
+    // assumed.
     public int HwZoneBack { get; set; } = 1;
-    public int HwZoneLumbar { get; set; } = 2;
+    public int HwZoneLumbar { get; set; } = 4;
     public int HwZoneLThigh { get; set; } = 3;
     public int HwZoneRThigh { get; set; } = 3;  // shares motor with lthigh
-    public int HwZoneLLeg { get; set; } = 4;
-    public int HwZoneRLeg { get; set; } = 4;    // shares motor with lleg
+    public int HwZoneLLeg { get; set; } = 2;
+    public int HwZoneRLeg { get; set; } = 2;    // shares motor with lleg
 
     // ESP entity IDs for HTTP POSTs
     public string HeatEntity { get; set; } = "recliner3_massage_heat";
