@@ -68,9 +68,15 @@ public class ZoneController
         var now = Environment.TickCount64;
         foreach (var (hw, val) in hwIntensities)
         {
-            // Skip if unchanged enough or sent too recently
-            if (Math.Abs(val - _lastSent[hw]) < 0.02 && val != 0.0) continue;
-            if (now - _lastSentMs[hw] < Cfg.EspMinUpdateIntervalMs) continue;
+            bool goingToZero = val == 0.0 && _lastSent[hw] != 0.0;
+            bool changed = Math.Abs(val - _lastSent[hw]) >= 0.02;
+
+            // Skip when value hasn't meaningfully changed (and isn't a release-to-0).
+            if (!changed && !goingToZero) continue;
+            // Throttle ESP writes, but always let release-to-0 through so the user
+            // never sees a phantom-stuck high value after letting go of contact.
+            if (!goingToZero && now - _lastSentMs[hw] < Cfg.EspMinUpdateIntervalMs) continue;
+
             _lastSent[hw] = val;
             _lastSentMs[hw] = now;
             IntensityChanged?.Invoke(hw, val);
