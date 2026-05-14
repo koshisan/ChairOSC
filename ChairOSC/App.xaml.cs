@@ -19,7 +19,7 @@ public partial class App : Application
 
     private void OnStartup(object sender, StartupEventArgs e)
     {
-        Esp = new EspClient(Cfg.EspHost);
+        Esp = new EspClient(Cfg.EspHost, Cfg);
         Zc = new ZoneController(Cfg, Esp);
         Osc = new OscListener(Zc);
 

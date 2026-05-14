@@ -39,9 +39,10 @@ public class AppConfig
     public int HwZoneLLeg { get; set; } = 4;
     public int HwZoneRLeg { get; set; } = 4;    // shares motor with lleg
 
-    // ESP entity IDs for HTTP POSTs
-    public string HeatEntity { get; set; } = "recliner3_massage_heat";
-    public string IntensityEntityFormat { get; set; } = "recliner3_massage_zone_{0}_intensity";  // {0} = hw zone 1..4
+    // ESP entity IDs for HTTP POSTs. ESPHome's local web_server uses the
+    // object_id (slugified entity name) WITHOUT a device prefix.
+    public string HeatEntity { get; set; } = "massage_heat";
+    public string IntensityEntityFormat { get; set; } = "massage_zone_{0}_intensity";  // {0} = hw zone 1..4
 
     [JsonIgnore]
     public static string ConfigPath { get; } =
@@ -57,11 +58,28 @@ public class AppConfig
             {
                 var json = File.ReadAllText(ConfigPath);
                 var cfg = JsonSerializer.Deserialize<AppConfig>(json);
-                if (cfg != null) return cfg;
+                if (cfg != null)
+                {
+                    cfg.Migrate();
+                    return cfg;
+                }
             }
         }
         catch { /* fall through to defaults */ }
         return new AppConfig();
+    }
+
+    // One-time fix-ups for entries persisted under older versions. ESPHome's
+    // local web_server does not accept the HA-style "recliner3_" device
+    // prefix — versions <= 1.3.x defaulted to it, so strip it here so users
+    // don't have to hand-edit %APPDATA%\ChairOSC\config.json.
+    private void Migrate()
+    {
+        const string oldPrefix = "recliner3_";
+        if (HeatEntity?.StartsWith(oldPrefix) == true)
+            HeatEntity = HeatEntity.Substring(oldPrefix.Length);
+        if (IntensityEntityFormat?.StartsWith(oldPrefix) == true)
+            IntensityEntityFormat = IntensityEntityFormat.Substring(oldPrefix.Length);
     }
 
     public void Save()
