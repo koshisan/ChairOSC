@@ -25,24 +25,19 @@ public partial class App : Application
 
         Osc.Start(Cfg.OscBind, Cfg.OscPort);
 
-        // Load chair.ico from the WPF resources (embedded via Resource item).
-        Icon trayIcon = SystemIcons.Application;
-        try
-        {
-            var iconStreamInfo = GetResourceStream(new Uri("chair.ico", UriKind.Relative));
-            if (iconStreamInfo != null)
-            {
-                using var stream = iconStreamInfo.Stream;
-                trayIcon = new Icon(stream);
-            }
-        }
-        catch { /* fall back to system icon */ }
-
+        // Load the icon variant that matches the current Windows tray theme.
+        // chair_light.ico has dark strokes (visible on light tray);
+        // chair_dark.ico has white strokes (visible on dark tray).
         _tray = new WinForms.NotifyIcon
         {
-            Icon = trayIcon,
+            Icon = LoadIconForTheme(ThemeWatcher.Current),
             Text = "ChairOSC",
             Visible = true,
+        };
+        ThemeWatcher.Start();
+        ThemeWatcher.Changed += t =>
+        {
+            if (_tray != null) _tray.Icon = LoadIconForTheme(t);
         };
         var menu = new WinForms.ContextMenuStrip();
         var openItem = menu.Items.Add("Open Settings");
@@ -79,9 +74,26 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        ThemeWatcher.Stop();
         try { Osc?.Stop(); } catch { }
         if (_tray != null) { _tray.Visible = false; _tray.Dispose(); _tray = null; }
         Cfg.Save();
         base.OnExit(e);
+    }
+
+    private Icon LoadIconForTheme(ThemeWatcher.Theme theme)
+    {
+        var path = theme == ThemeWatcher.Theme.Dark ? "chair_dark.ico" : "chair_light.ico";
+        try
+        {
+            var info = GetResourceStream(new Uri(path, UriKind.Relative));
+            if (info != null)
+            {
+                using var stream = info.Stream;
+                return new Icon(stream);
+            }
+        }
+        catch { /* fall through */ }
+        return SystemIcons.Application;
     }
 }
