@@ -46,6 +46,7 @@ public partial class MainWindow : Window
         WindowMsBox.Text = c.VelocityWindowMs.ToString(Inv);
         MaxIntensityBox.Text = c.MaxIntensity.ToString("0.00", Inv);
         EspMinIntervalBox.Text = c.EspMinUpdateIntervalMs.ToString(Inv);
+        MaxRealisticVelocityBox.Text = c.MaxRealisticVelocity.ToString("0.0", Inv);
     }
 
     private void WireEvents()
@@ -91,6 +92,7 @@ public partial class MainWindow : Window
         if (int.TryParse(WindowMsBox.Text, NumberStyles.Integer, Inv, out var w)) c.VelocityWindowMs = w;
         if (double.TryParse(MaxIntensityBox.Text, NumberStyles.Float, Inv, out var m)) c.MaxIntensity = m;
         if (int.TryParse(EspMinIntervalBox.Text, NumberStyles.Integer, Inv, out var u)) c.EspMinUpdateIntervalMs = u;
+        if (double.TryParse(MaxRealisticVelocityBox.Text, NumberStyles.Float, Inv, out var mrv)) c.MaxRealisticVelocity = mrv;
 
         c.Save();
         App.Esp.UpdateHost(c.EspHost);

@@ -20,6 +20,14 @@ public class AppConfig
     public double MaxIntensity { get; set; } = 1.0;       // hard ceiling
     public int EspMinUpdateIntervalMs { get; set; } = 50; // throttle per-zone HTTP writes
 
+    // Velocity-cap: VRChat contact receivers can flicker at the sender's
+    // boundary as the avatar idle-animates, producing phantom proximity
+    // jumps that look like 10+ units/sec velocity. Realistic human stroking
+    // is ~2-4/sec. Sample pairs whose computed velocity exceeds this cap
+    // are discarded by MaxVelocity rather than contributing to the max,
+    // so a single noise spike can't pin the zone at MaxIntensity.
+    public double MaxRealisticVelocity { get; set; } = 5.0;
+
     // Per-OSC-zone multiplier (applied after velocity calc, before clamp)
     public double MultBack { get; set; } = 1.0;
     public double MultLumbar { get; set; } = 1.0;

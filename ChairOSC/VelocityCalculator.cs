@@ -9,11 +9,13 @@ public class VelocityCalculator
 {
     private readonly Queue<(long t, double v)> _samples = new();
     private readonly int _windowMs;
+    private readonly double _maxRealisticVel;
     private double _lastValue;
 
-    public VelocityCalculator(int windowMs)
+    public VelocityCalculator(int windowMs, double maxRealisticVel)
     {
         _windowMs = windowMs;
+        _maxRealisticVel = maxRealisticVel;
     }
 
     public void Push(double value)
@@ -28,6 +30,9 @@ public class VelocityCalculator
 
     /// <summary>
     /// Returns max |dValue/dt| in units-per-second over the window, or 0 if no movement.
+    /// Pair-wise velocities above _maxRealisticVel are dropped — VRChat contact
+    /// receivers can flicker at sender boundary edges, producing phantom spikes
+    /// of 10+ units/sec which would otherwise pin the zone at full intensity.
     /// </summary>
     public double MaxVelocity()
     {
@@ -40,6 +45,7 @@ public class VelocityCalculator
             if (dt <= 0) continue;
             var dv = Math.Abs(arr[i].v - arr[i - 1].v);
             var vel = dv / dt;
+            if (vel > _maxRealisticVel) continue;  // discard noise-burst spikes
             if (vel > maxVel) maxVel = vel;
         }
         return maxVel;
