@@ -11,6 +11,7 @@ public partial class App : Application
 {
     public static AppConfig Cfg { get; private set; } = AppConfig.Load();
     public static EspClient Esp { get; private set; } = null!;
+    public static EspDispatcher Dispatcher { get; private set; } = null!;
     public static ZoneController Zc { get; private set; } = null!;
     public static OscListener Osc { get; private set; } = null!;
 
@@ -20,9 +21,11 @@ public partial class App : Application
     private void OnStartup(object sender, StartupEventArgs e)
     {
         Esp = new EspClient(Cfg.EspHost, Cfg);
-        Zc = new ZoneController(Cfg, Esp);
+        Dispatcher = new EspDispatcher(Esp, () => Cfg.EspMinUpdateIntervalMs);
+        Zc = new ZoneController(Cfg, Esp, Dispatcher);
         Osc = new OscListener(Zc);
 
+        Dispatcher.Start();
         Osc.Start(Cfg.OscBind, Cfg.OscPort);
 
         // Load the icon variant that matches the current Windows tray theme.
@@ -76,6 +79,7 @@ public partial class App : Application
     {
         ThemeWatcher.Stop();
         try { Osc?.Stop(); } catch { }
+        try { Dispatcher?.Stop(); } catch { }
         if (_tray != null) { _tray.Visible = false; _tray.Dispose(); _tray = null; }
         Cfg.Save();
         base.OnExit(e);

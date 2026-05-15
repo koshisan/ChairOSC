@@ -60,10 +60,13 @@ public partial class MainWindow : Window
         Z3Slider.ValueChanged += (s, a) => Z3Value.Text = Z3Slider.Value.ToString("0.00", Inv);
         Z4Slider.ValueChanged += (s, a) => Z4Value.Text = Z4Slider.Value.ToString("0.00", Inv);
 
-        Z1Send.Click += async (s, a) => { SetZoneDisplay(1, Z1Slider.Value); await App.Esp.SetIntensityAsync(1, Z1Slider.Value); };
-        Z2Send.Click += async (s, a) => { SetZoneDisplay(2, Z2Slider.Value); await App.Esp.SetIntensityAsync(2, Z2Slider.Value); };
-        Z3Send.Click += async (s, a) => { SetZoneDisplay(3, Z3Slider.Value); await App.Esp.SetIntensityAsync(3, Z3Slider.Value); };
-        Z4Send.Click += async (s, a) => { SetZoneDisplay(4, Z4Slider.Value); await App.Esp.SetIntensityAsync(4, Z4Slider.Value); };
+        // Test tab uses the same dispatcher path as OSC so we keep "latest wins"
+        // semantics. UI is updated immediately; the dispatcher will re-fire UI
+        // when it actually pushes to the ESP (same value, no flicker).
+        Z1Send.Click += (s, a) => { SetZoneDisplay(1, Z1Slider.Value); App.Dispatcher.Set(1, Z1Slider.Value); };
+        Z2Send.Click += (s, a) => { SetZoneDisplay(2, Z2Slider.Value); App.Dispatcher.Set(2, Z2Slider.Value); };
+        Z3Send.Click += (s, a) => { SetZoneDisplay(3, Z3Slider.Value); App.Dispatcher.Set(3, Z3Slider.Value); };
+        Z4Send.Click += (s, a) => { SetZoneDisplay(4, Z4Slider.Value); App.Dispatcher.Set(4, Z4Slider.Value); };
 
         HeatSend.Click += async (s, a) =>
         {
@@ -72,13 +75,13 @@ public partial class MainWindow : Window
             await App.Esp.SetSwitchAsync(App.Cfg.HeatEntity, on);
         };
 
-        AllOffBtn.Click += async (s, a) =>
+        AllOffBtn.Click += (s, a) =>
         {
             Z1Slider.Value = 0; Z2Slider.Value = 0; Z3Slider.Value = 0; Z4Slider.Value = 0;
             for (int i = 1; i <= 4; i++)
             {
                 SetZoneDisplay(i, 0);
-                await App.Esp.SetIntensityAsync(i, 0);
+                App.Dispatcher.Set(i, 0);
             }
         };
     }

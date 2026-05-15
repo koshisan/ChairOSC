@@ -10,9 +10,8 @@ public class ZoneController
 {
     public AppConfig Cfg { get; set; }
     private readonly EspClient _esp;
+    private readonly EspDispatcher _dispatcher;
     private readonly Dictionary<string, VelocityCalculator> _calc = new();
-    private readonly Dictionary<int, double> _lastSent = new();
-    private readonly Dictionary<int, long> _lastSentMs = new();
     private bool _lastHeat;
     public event Action<string>? Log;
     public event Action<int, double>? IntensityChanged;  // (hwZone 1..4, intensity 0..1)
@@ -20,12 +19,16 @@ public class ZoneController
 
     private static readonly string[] OscZones = { "back", "lumbar", "lthigh", "rthigh", "lleg", "rleg" };
 
-    public ZoneController(AppConfig cfg, EspClient esp)
+    public ZoneController(AppConfig cfg, EspClient esp, EspDispatcher dispatcher)
     {
         Cfg = cfg;
         _esp = esp;
+        _dispatcher = dispatcher;
         foreach (var z in OscZones) _calc[z] = new VelocityCalculator(cfg.VelocityWindowMs);
-        for (int i = 1; i <= 4; i++) { _lastSent[i] = -1; _lastSentMs[i] = 0; }
+        // Re-fire the dispatcher's "actually sent" event as IntensityChanged so the
+        // UI matches what the ESP received (not what was queued).
+        _dispatcher.Dispatched += (hw, val) => IntensityChanged?.Invoke(hw, val);
+        _dispatcher.Log += msg => Log?.Invoke(msg);
     }
 
     public void RebuildCalculators()
@@ -33,19 +36,21 @@ public class ZoneController
         foreach (var z in OscZones) _calc[z] = new VelocityCalculator(Cfg.VelocityWindowMs);
     }
 
-    /// <summary>Called when an OSC ChairOSC/v1/{zone} float arrives.</summary>
-    public async Task OnZoneAsync(string zoneName, double proximity)
+    /// <summary>
+    /// Called for every OSC ChairOSC/v1/{zone} packet. CPU-only path — never
+    /// blocks on HTTP. The actual ESP write happens on the dispatcher loop so
+    /// the OSC receive thread can keep draining UDP packets without dropping.
+    /// </summary>
+    public Task OnZoneAsync(string zoneName, double proximity)
     {
-        if (!_calc.TryGetValue(zoneName, out var calc)) return;
+        if (!_calc.TryGetValue(zoneName, out var calc)) return Task.CompletedTask;
         calc.Push(Math.Clamp(proximity, 0.0, 1.0));
 
-        if (!Cfg.Enabled) return;
+        if (!Cfg.Enabled) return Task.CompletedTask;
 
-        // Recompute intensities for ALL hardware zones, because a single OSC update may
+        // Recompute intensities for ALL 4 hardware zones, because one OSC update may
         // affect a hardware zone that shares with another OSC zone (max-aggregation).
-        var hwIntensities = new Dictionary<int, double>();
-        for (int hw = 1; hw <= 4; hw++) hwIntensities[hw] = 0.0;
-
+        var hwIntensities = new double[5];  // index 0 unused
         foreach (var z in OscZones)
         {
             var (hw, mult) = MapZone(z);
@@ -65,24 +70,14 @@ public class ZoneController
             if (intensity > hwIntensities[hw]) hwIntensities[hw] = intensity;
         }
 
-        var now = Environment.TickCount64;
-        foreach (var (hw, val) in hwIntensities)
+        // Hand each hw zone's latest target to the dispatcher. "Latest wins":
+        // if multiple updates land in one throttle window, only the most-recent
+        // value is sent — but it WILL be sent, never silently dropped.
+        for (int hw = 1; hw <= 4; hw++)
         {
-            bool goingToZero = val == 0.0 && _lastSent[hw] != 0.0;
-            bool changed = Math.Abs(val - _lastSent[hw]) >= 0.02;
-
-            // Skip when value hasn't meaningfully changed (and isn't a release-to-0).
-            if (!changed && !goingToZero) continue;
-            // Throttle ESP writes, but always let release-to-0 through so the user
-            // never sees a phantom-stuck high value after letting go of contact.
-            if (!goingToZero && now - _lastSentMs[hw] < Cfg.EspMinUpdateIntervalMs) continue;
-
-            _lastSent[hw] = val;
-            _lastSentMs[hw] = now;
-            IntensityChanged?.Invoke(hw, val);
-            var ok = await _esp.SetIntensityAsync(hw, val).ConfigureAwait(false);
-            if (!ok) Log?.Invoke($"ESP zone {hw} set {val:0.00} FAILED");
+            _dispatcher.Set(hw, hwIntensities[hw]);
         }
+        return Task.CompletedTask;
     }
 
     public async Task OnHeatAsync(bool on)
